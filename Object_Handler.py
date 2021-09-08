@@ -28,6 +28,6 @@ class UserObject(Object):
         for x in self.actQueue:
             try:
                 exec(x)
-            except UNSUPPORTED_METHOD:
+            except (AttributeError):
                 print("Warning: Command " + x + " Could not be executed")
             self.actQueue.remove(x)
