@@ -13,6 +13,15 @@ class Car(UserObject):
         self.carDir = [-1, 0]  # this is a unit vector
         self.carDirRad = 0  # radians
 
+    def __init__(self, pt):
+        super().__init__()
+        self.name = "Car"
+        self.car = Rectangle(Point(pt.x - 20, pt.y - 20), Point(pt.x + 20, pt.y + 20))
+        self.car.setFill('yellow')
+        self.carSpeed = 0
+        self.carDir = [-1, 0]  # this is a unit vector
+        self.carDirRad = 0  # radians
+
     def changeSpeed(self, always_active_bool):
         self.carSpeed += (1/(1 + self.carSpeed)) * 10 * always_active_bool
         """that bool determines the direction of the car, it can be -1 or 1"""

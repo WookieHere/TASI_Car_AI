@@ -1,11 +1,12 @@
 import math
 from graphics import *
+from Car_Handler import *
 
 
 
 class GHandler:
-    def __init__(self):
-        self.window = GraphWin('Car_AI', 1000, 1000)
+    def __init__(self, xsize = 1000, ysize = 1000):
+        self.window = GraphWin('Car_AI', xsize, ysize)
         self.Objects = []
         self.UserObjects = []
         self.event_queue = []
@@ -15,14 +16,21 @@ class GHandler:
 
     def addObject(self, object):
         """object is a string of the init call"""
-        pre_string = "self.Objects.append(" + object + ")"
-        exec(pre_string)
+        try:
+            pre_string = "self.Objects.append(" + object + ")"
+            exec(pre_string)
+        except (TypeError):
+            self.Objects.append(object)
+
         self.Objects[len(self.Objects) - 1].draw(self.window)   #this draws the newly placed object
 
     def addUserObject(self, object):
         """object is a string of the init call"""
-        pre_string = "self.UserObjects.append(" + object + ")"
-        exec(pre_string)
+        try:
+            pre_string = "self.UserObjects.append(" + object + ")"
+            exec(pre_string)
+        except (TypeError):
+            self.UserObjects.append(object)
         self.UserObjects[len(self.UserObjects) - 1].draw(self.window)  # this draws the newly placed object
 
     def addToEvents(self, event):
@@ -31,6 +39,11 @@ class GHandler:
         else:
             for x in self.UserObjects:
                 x.addToActionQueue(event)
+
+    def setEvents(self, message):
+        """the message is an array of strings as commands to particular objects"""
+        self.event_queue = message
+        pass
 
     def popEvent(self):
         """this will process an event and then do the appropriate command"""
@@ -57,3 +70,24 @@ class GHandler:
             self.event_queue.pop()
             return -1
 
+    def getObjects(self):
+        return self.Objects
+
+    def getUserObjects(self):
+        return self.UserObjects
+
+    def popAllEvents(self):
+        while len(self.event_queue) > 0:
+            try:
+                if self.event_queue[0] == "end":
+                    for x in self.Objects:
+                        x.act()
+                    for x in self.UserObjects:
+                        x.act()
+                    self.event_queue.pop(0)
+                    """this does not execute an 'end frame' command"""
+                else:
+                    exec(self.event_queue[0])
+                    self.event_queue.pop(0)
+            except (IndexError, AttributeError):
+                self.event_queue.pop(0)
