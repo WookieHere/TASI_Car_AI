@@ -10,4 +10,5 @@ class Field_Interface:
 
     def modify(self, cmdList):
         """this function will later run collision detection etc as a driver"""
+        cmdList.append("end")
         return 1

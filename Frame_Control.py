@@ -43,17 +43,21 @@ class TimerInterrupt:
 
     def getMouse(self, Input):
         """this function only wants the coordinates at first"""
-        mouseInput = None
+        mouseInput = "None"
         progressFlag = 0
         newCommand = ""
-        while mouseInput != -1:
+        Input.GH.window.checkMouse() #clear one mouse input
+        while mouseInput != "exit":
 
-            if mouseInput != None and progressFlag == 0:
-                newCommand = "self.addObject(Wall(Point(" + str(mouseInput.x) + "," + str(mouseInput.y) + "),Point("
+            if mouseInput[0] == "makeWall" and progressFlag == 0:
+                newCommand = "self.addObject(Wall(Point(" + str(mouseInput[1].x) + "," + str(mouseInput[1].y) + "),Point("
                 progressFlag = 1
-            elif mouseInput != None and progressFlag == 1:
-                newCommand += (str(mouseInput.x) + "," + str(mouseInput.y) + ")))")
+            elif mouseInput[0] == "makeWall" and progressFlag == 1:
+                newCommand += (str(mouseInput[1].x) + "," + str(mouseInput[1].y) + ")))")
                 progressFlag = 0
+                return newCommand
+            elif mouseInput[0] == "makeCar":
+                newCommand = Input.createCar(mouseInput[1])
                 return newCommand
             try:
                 mouseInput = Input.checkMouseInput()

@@ -87,6 +87,8 @@ class GHandler:
                     self.event_queue.pop(0)
                     """this does not execute an 'end frame' command"""
                 else:
+                    for x in self.UserObjects:
+                        x.sendCmd(self.event_queue[0])
                     exec(self.event_queue[0])
                     self.event_queue.pop(0)
             except (IndexError, AttributeError):

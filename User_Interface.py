@@ -4,6 +4,7 @@ import Messager_Facade
 class UserInterface:
     def __init__(self, Messager):
         self.Type = "User"
+        self.to_create = "Wall"
         self.Msgr = Messager
         self.GH = Messager.Graphics
         self.valid_keys = ["w", "a", "s", "d", "o", "p", "r"]
@@ -35,13 +36,20 @@ class UserInterface:
     def checkMouseInput(self):
         key = self.GH.window.checkKey()
         mousePoint = self.GH.window.checkMouse()
+
         if  key == "e":
-            return -1
+            return "exit"
         elif key == "c":
-            self.createCar(mousePoint)
-            return -1
+            self.to_create = "Car"
+        elif key == "w":
+            self.to_create = "Wall"
+
+        if self.to_create == "Car" and mousePoint != None:
+            return "makeCar", mousePoint
+        elif self.to_create == "Wall" and mousePoint != None:
+            return "makeWall", mousePoint
         else:
-            return mousePoint
+            return "None"
 
     def processInput(self):
         self.cmdList.append(self.funcDict[self.checkInput()])
@@ -50,5 +58,7 @@ class UserInterface:
         return self.cmdList
 
     def createCar(self, point):
-        self.cmdList.append("self.addUserObject(Car(Point(" + str(point.x) + "," + str(point.y) + ")))")
+        new_str = "self.addUserObject(Car(Point(" + str(point.x) + "," + str(point.y) + ")))"
+        #self.cmdList.append(new_str)
+        return new_str
 

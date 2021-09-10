@@ -31,3 +31,9 @@ class UserObject(Object):
             except (AttributeError):
                 print("Warning: Command " + x + " Could not be executed")
             self.actQueue.remove(x)
+
+    def sendCmd(self, command):
+        try:
+            exec(command)
+        except (AttributeError):
+            print("Invalid command sent to User Object")
