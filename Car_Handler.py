@@ -21,9 +21,10 @@ class Car(UserObject):
         self.carSpeed = 0
         self.carDir = [-1, 0]  # this is a unit vector
         self.carDirRad = 0  # radians
+        self.pos = pt
 
     def changeSpeed(self, always_active_bool):
-        self.carSpeed += (1/(1 + self.carSpeed)) * 10 * always_active_bool
+        self.carSpeed += 1 * always_active_bool
         """that bool determines the direction of the car, it can be -1 or 1"""
 
     def changeDir(self, always_active_bool):
@@ -35,6 +36,8 @@ class Car(UserObject):
     def move(self, x, y):
         try:
             self.car.move(x, y)
+            self.pos.x += x
+            self.pos.y += y
             """checks to see if x and y are ints"""
         except (TypeError):
             print("Error: Invalid Operands in move (", x,",", y, ")")
@@ -45,6 +48,10 @@ class Car(UserObject):
 
     def draw(self, window):
         self.car.draw(window)
+
+    def getPos(self):
+        return self.pos
+
 
 class Wall(Object):
     def __init__(self, pt_a, pt_b):

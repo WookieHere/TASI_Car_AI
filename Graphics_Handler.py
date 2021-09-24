@@ -93,3 +93,9 @@ class GHandler:
                     self.event_queue.pop(0)
             except (IndexError, AttributeError):
                 self.event_queue.pop(0)
+
+    def drawPointCloud(self, pointcloud):
+        for pt in pointcloud:
+            temp = Circle(Point(pt.x, pt.y), 5)
+            temp.setFill('blue')
+            temp.draw(self.window)
