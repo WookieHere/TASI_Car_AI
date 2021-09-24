@@ -2,6 +2,7 @@ import Frame_Control
 import User_Interface
 import Field_Interface
 import Graphics_Handler
+import Lines_and_Dist
 
 class Messager:
     def __init__(self, UsrCmd = None, frameRate = .0125):
@@ -25,9 +26,11 @@ class Messager:
         while True:
             self.Frame_Control.updateFrame(self.Input)
             if self.Mode == "Run":
+                pause_flag = 0
                 self.Graphics.window.setBackground("white")
                 self.getCommandList()
                 self.execCommands()
+
             elif self.Mode == "MapEdit":
                 self.mapFile = open("Maps.txt", "a+")
                 self.Graphics.window.setBackground("yellow")
@@ -38,8 +41,11 @@ class Messager:
                 self.Mode = "Run"
             else:
                 #assumed mode is "Pause"
-                self.Graphics.window.setBackground("orange")
+                if pause_flag == 0:
+                    self.Graphics.window.setBackground("orange")
+                    self.Graphics.drawPointCloud(self.Field_Interface.getPointCloud(self.Graphics.getUserObjects()[0].getPos()))
                 self.execCommands()
+                pause_flag = 1
 
             self.Frame_Control.waitForFrame()
 
@@ -51,6 +57,8 @@ class Messager:
             try:
                 if "self.changeMode" in x:
                     exec(x)
+                elif "addObject(Wall" in x:
+                    self.Field_Interface.addWall(x) #this adds a wall to the field interface
             except (AttributeError, NameError):
                 pass
         """that looks for commands to the messager, then passes the rest off to the field handler"""
