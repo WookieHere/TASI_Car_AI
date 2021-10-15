@@ -1,0 +1,6 @@
+Diamond:
+self.addObject(Wall(Point(8.0,442.0),Point(486.0,241.0)))
+self.addObject(Wall(Point(486.0,241.0),Point(824.0,500.0)))
+self.addObject(Wall(Point(824.0,500.0),Point(443.0,911.0)))
+self.addObject(Wall(Point(443.0,910.0),Point(56.0,472.0)))
+self.addUserObject(Car(Point(443.0,569.0)))

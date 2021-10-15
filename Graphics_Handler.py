@@ -1,5 +1,3 @@
-import math
-from graphics import *
 from Car_Handler import *
 
 
@@ -11,8 +9,6 @@ class GHandler:
         self.UserObjects = []
         self.event_queue = []
         """that array will be filled later with things to draw etc."""
-
-
 
     def addObject(self, object):
         """object is a string of the init call"""

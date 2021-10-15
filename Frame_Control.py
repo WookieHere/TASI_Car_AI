@@ -46,7 +46,7 @@ class TimerInterrupt:
         mouseInput = "None"
         progressFlag = 0
         newCommand = ""
-        Input.GH.window.checkMouse() #clear one mouse input
+        Input.Msgr.Graphics.window.checkMouse() #clear one mouse input
         while mouseInput != "exit":
 
             if mouseInput[0] == "makeWall" and progressFlag == 0:
