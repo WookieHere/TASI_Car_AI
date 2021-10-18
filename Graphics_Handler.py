@@ -2,6 +2,7 @@ from Car_Handler import *
 
 
 
+
 class GHandler:
     def __init__(self, xsize = 1000, ysize = 1000):
         self.window = GraphWin('Car_AI', xsize, ysize)
@@ -91,7 +92,7 @@ class GHandler:
                 self.event_queue.pop(0)
 
     def drawPointCloud(self, pointcloud):
-        for pt in pointcloud:
+        for pt in pointcloud.points:
             temp = Circle(Point(pt.x, pt.y), 5)
             temp.setFill('blue')
             temp.draw(self.window)

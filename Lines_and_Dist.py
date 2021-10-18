@@ -2,10 +2,26 @@
 from math import sin, cos, sqrt, pow, pi
 
 class Pt:
-    def __init__(self, a, b):
+    def __init__(self, a, b, rads = 0):
         self.x = a
         self.y = b
+        self.radian = rads
+        self.dist = 0 #this will be arbitrary in some cases
         """this just initializes the point"""
+
+class PointClound:
+    def __init__(self, points = [], resolution = 60):
+        self.points = points
+        self.resolution = resolution
+
+    def setPoints(self, points):
+        self.points = points
+
+    def setResolution(self, resolution):
+        self.resolution = resolution
+
+    def append(self, point):
+        self.points.append(point)
 
 class MathLine:
 
@@ -22,6 +38,19 @@ class MathLine:
             self.slope = 1000000 #arbitrary very high number
 
         self.y_intercept = (-self.pt_A.x * self.slope) + self.pt_A.y
+
+    def makePerpLine(self, start_point, length):
+        """
+        y = ax (from known start point)
+        d = sqrt(x^2 + y^2)
+          = sqrt(x^2 + (ax)^2)
+        d^2 = (a^2 + 1)x^2
+        x = sqrt(d^2/(a^2 + 1))
+        """
+        new_slope = pow(self.slope * -1, -1)
+        delta_x = sqrt(pow(length/2, 2) / (pow(new_slope,2) + 1))
+        delta_y = new_slope * delta_x
+        return MathLine(Pt(start_point.x - delta_x, start_point.y - delta_y), Pt(start_point.x + delta_x, start_point.y + delta_y))
 
     def getDomain(self):
         if(self.pt_A.x < self.pt_B.x):
@@ -53,13 +82,30 @@ class MathLine:
 
         self.y_intercept = (-self.pt_A.x * self.slope) + self.pt_A.y
 
+    def getPointAlongLine(self, length):
+        if self.pt_A.x < self.pt_B.x:
+            pt = self.pt_A
+        else:
+            pt = self.pt_B
+
+        new_x = sqrt(pow(length, 2) / (pow(self.slope, 2) + 1))
+        new_y = new_x * self.slope
+        new_x += pt.x
+        new_y += pt.y
+        return Pt(new_x, new_y)
+
+    def getMidpoint(self):
+        return Pt((self.pt_A.x + self.pt_B.x) / 2, (self.pt_A.y + self.pt_B.y) / 2)
+
+
+
 class Lidar:
     """range finder"""
     def __init__(self, pt_A = Pt(0,0), range = 200):
         """A is a coordinate, max_range is an int of some sort"""
         self.pos = pt_A
         self.range = range
-        self.pointcloud = []
+        self.pointcloud = PointClound()
         """range is just to prevent bugs in open spaces"""
 
     def setPos(self, pt_A):
@@ -74,8 +120,18 @@ class Lidar:
         intercept_x = (-pos_y_intercept + line.y_intercept)/(recip_slope - line.slope)
         intercept_y = (intercept_x * recip_slope) + pos_y_intercept
         intercept_point = Pt(intercept_x, intercept_y)
-        dist = self.getDistPoint(intercept_point)
-        return dist
+        if self.checkPointLine(line, self.pos):
+            dist = self.getDistPoint(intercept_point)
+            return dist
+
+        else:
+            dist_a = self.getDistPoint(line.pt_A)
+            dist_b = self.getDistPoint(line.pt_B)
+            if dist_a < dist_b:
+                return dist_a
+            else:
+                return dist_b
+
 
     def getDistPoint(self, pt):
         x = self.pos.x
@@ -83,9 +139,9 @@ class Lidar:
         dist = sqrt(pow(x - pt.x, 2) + pow(y - pt.y, 2))
         return dist
 
-    def getIntersect(self, lidar_line, b):
+    def getIntersect(self, lidar_line, other_line):
         """a and b are lines"""
-        if lidar_line.slope == b.slope:
+        if lidar_line.slope == other_line.slope:
             """a and b are parallel"""
             return None
         """m_0x + b_0 = m_1x + b_1"""
@@ -93,12 +149,13 @@ class Lidar:
         """x = (b1-b0)/(m0-m1)"""
 
         try:
-            x = (b.y_intercept - lidar_line.y_intercept) / (lidar_line.slope - b.slope)
+            x = (other_line.y_intercept - lidar_line.y_intercept) / (lidar_line.slope - other_line.slope)
             y = (lidar_line.slope * x) + lidar_line.y_intercept
             new_pt = Pt(x, y)
-            if self.checkPointLine(b, new_pt):
+            if self.checkPointLine(other_line, new_pt):
                 return new_pt
             else:
+                #no intersection
                 return None
 
         except (AttributeError):
@@ -124,6 +181,8 @@ class Lidar:
     def scan(self, track, resolution = 60, starting_angle = 0):
         """track is an array of all of the math walls"""
         """This function generates a pointcloud around a user object"""
+        self.pointcloud.setResolution(resolution)
+        self.pointcloud.points = []
         angle = starting_angle
         lidar_line = MathLine(self.pos, Pt(self.pos.x + self.range, self.pos.y))
 
@@ -131,11 +190,12 @@ class Lidar:
             lidar_line.rotate(angle)
             for wall in track:
                 test_pt = self.getIntersect(lidar_line, wall)
+
                 if test_pt != None:
+                    test_pt.radian = angle/180
+                    test_pt.dist = self.getDistPoint(test_pt)
                     self.pointcloud.append(test_pt)
             angle = angle + (360/resolution)
-        cloud = self.pointcloud
-        self.pointcloud = []
-        return cloud
+        return self.pointcloud
     """There is a problem somewhere with the rotating process!!!"""
 

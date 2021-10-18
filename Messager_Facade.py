@@ -3,6 +3,7 @@ import User_Interface
 import Field_Interface
 import Graphics_Handler
 import Lines_and_Dist
+import copy
 
 class Messager:
     def __init__(self, UserClass, frameRate = .0125):
@@ -20,8 +21,12 @@ class Messager:
         self.mapFile = open("Maps.txt", "r")
         #Input can be overriden as an arguement
 
+    def setFrameRate(self, framerate, debugmode = None):
+        self.Frame_Control.setFrameRate(framerate, debugmode)
+
     def run(self):
         if self.Input.type == "User":
+            """User Run Loop"""
             while True:
                 self.Frame_Control.updateFrame(self.Input)
                 if self.Mode == "Run":
@@ -36,7 +41,6 @@ class Messager:
                     self.getMouse() #this is a loop that runs until exit command is sent
                     self.InputCmdList = self.mapFileBuffer
                     self.execCommands()
-                    #self.saveMap()
                     self.Mode = "Run"
                 else:
                     #assumed mode is "Pause"
@@ -50,18 +54,35 @@ class Messager:
 
                 self.Frame_Control.waitForFrame()
         elif self.Input.type == "AI":
+            """This section is for the AI"""
             self.Graphics.window.setBackground("white")
             self.flashLidar()
             self.Input.update_sensors(self.Lidar_Pointcloud)
+            self.Input.setCarParams(self.getCarParams("Speed"), self.getCarParams("Dir"))
             self.Input.Init()
+            self.Field_Interface.setCheckPoint(self.getCarParams("Pos"))
+            self.Field_Interface.Reward_Track.setTrack(self.Graphics.getObjects())
+            self.Field_Interface.Reward_Track.setCheckPoints()
+            self.Field_Interface.Reward_Track.drawCheckpoints(self.Graphics)
+            #self.Input.Network.manualControl()
             while True:
                 self.Frame_Control.updateFrame(self.Input)
                 self.getCommandList()
                 self.execCommands()
+                self.flashLidar()
+                self.Field_Interface.fitnessUpdate()
+                if self.Field_Interface.ruleCheck():
+                    self.Input.setFitness(self.Field_Interface.fitnessFunc())
+                    self.Field_Interface.clearFitness()
+                    self.Input.updateIteration()
+                    self.Field_Interface.resetCar(self.getCar())
+                    self.Input.Network.flushNetwork()
+                    #self.Input.Network.printConnections()
+                self.Input.update_sensors(self.Lidar_Pointcloud)
+                self.Input.setCarParams(self.getCarParams("Speed"), self.getCarParams("TurnRate"))
                 self.Frame_Control.waitForFrame()
 
     def createMap(self):
-
         self.Graphics.window.setBackground("yellow")
         self.getMouse()  # this is a loop that runs until exit command is sent
         self.drawMap()
@@ -117,14 +138,32 @@ class Messager:
         self.drawMap()
 
     def drawMap(self):
-        self.InputCmdList = self.mapFileBuffer
+        self.InputCmdList = copy.deepcopy(self.mapFileBuffer)
         self.execCommands()
 
     def flashLidar(self, draw = 0):
         try:
-            self.Lidar_Pointcloud = self.Field_Interface.getPointCloud(self.Graphics.getUserObjects()[0].getPos())
+            self.Lidar_Pointcloud = self.Field_Interface.getPointCloud(self.getCarParams("Pos"))
             if draw:
                 self.Graphics.drawPointCloud(self.Lidar_Pointcloud)
         except (IndexError):
             pass
         return self.Lidar_Pointcloud
+
+    def getCar(self, index = 0):
+        return self.Graphics.getUserObjects()[index]
+
+    def getCarParams(self, param_name = None, index = 0):
+        car = self.getCar(index)
+        if param_name == None or param_name == "All":
+            return car.getPos()
+            return car.carDirRad
+            return car.carSpeed
+        elif param_name == "Speed":
+            return car.carSpeed
+        elif param_name == "Dir":
+            return car.carDirRad
+        elif param_name == "TurnRate":
+            return car.turnRate
+        elif param_name == "Pos":
+            return car.getPos()

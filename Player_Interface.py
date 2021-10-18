@@ -51,11 +51,15 @@ class Player_Interface:
             self.Msgr.saveMap()
         elif key == "l":
             self.Msgr.loadMap()
+        elif key == "r":
+            self.to_create = "TrackLine"
 
         if self.to_create == "Car" and mousePoint != None:
             return "makeCar", mousePoint
         elif self.to_create == "Wall" and mousePoint != None:
             return "makeWall", mousePoint
+        elif self.to_create == "TrackLine" and mousePoint != None:
+            return "makeTrackLine", mousePoint
         else:
             return "None"
 

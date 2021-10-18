@@ -1,5 +1,5 @@
 from graphics import *
-import math
+
 
 """This file is for abstract object classes"""
 
@@ -36,4 +36,4 @@ class UserObject(Object):
         try:
             exec(command)
         except (AttributeError):
-            print("Invalid command sent to User Object")
+            print("Warning: Invalid command sent to User Object")
