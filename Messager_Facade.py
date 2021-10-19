@@ -6,10 +6,10 @@ import Lines_and_Dist
 import copy
 
 class Messager:
-    def __init__(self, UserClass, frameRate = .0125):
+    def __init__(self, UserClass, HandlerClass, frameRate = .0125):
         self.Frame_Control = Frame_Control.TimerInterrupt(frameRate)  # 60 fps
         self.Field_Interface = Field_Interface.Field_Interface()
-        self.Graphics = Graphics_Handler.GHandler()
+        self.Handler = HandlerClass
         self.Input = UserClass
         self.Input.connectMessager(self)
         self.InputCmdList = []
@@ -27,69 +27,94 @@ class Messager:
     def run(self):
         if self.Input.type == "User":
             """User Run Loop"""
-            while True:
-                self.Frame_Control.updateFrame(self.Input)
-                if self.Mode == "Run":
-                    pause_flag = 0
-                    self.Graphics.window.setBackground("white")
-                    self.getCommandList()
-                    self.execCommands()
+            self.run_User()
 
-                elif self.Mode == "MapEdit":
-                    self.mapFile = open("Maps.txt", "a+")
-                    self.Graphics.window.setBackground("yellow")
-                    self.getMouse() #this is a loop that runs until exit command is sent
-                    self.InputCmdList = self.mapFileBuffer
-                    self.execCommands()
-                    self.Mode = "Run"
-                else:
-                    #assumed mode is "Pause"
-                    if pause_flag == 0:
-                        self.Graphics.window.setBackground("orange")
-                        self.flashLidar(1)
-                        if self.Field_Interface.checkCollision():
-                            print("Collison Detected!")
-                    self.execCommands()
-                    pause_flag = 1
-
-                self.Frame_Control.waitForFrame()
         elif self.Input.type == "AI":
             """This section is for the AI"""
-            self.Graphics.window.setBackground("white")
+            #self.Handler.window.setBackground("white")
             self.flashLidar()
             self.Input.update_sensors(self.Lidar_Pointcloud)
             self.Input.setCarParams(self.getCarParams("Speed"), self.getCarParams("Dir"))
             self.Input.Init()
             self.Field_Interface.setCheckPoint(self.getCarParams("Pos"))
-            self.Field_Interface.Reward_Track.setTrack(self.Graphics.getObjects())
+            self.Field_Interface.Reward_Track.setTrack(self.Handler.getObjects())
             self.Field_Interface.Reward_Track.setCheckPoints()
-            self.Field_Interface.Reward_Track.drawCheckpoints(self.Graphics)
+            self.Field_Interface.Reward_Track.drawCheckpoints(self.Handler)
             #self.Input.Network.manualControl()
-            while True:
-                self.Frame_Control.updateFrame(self.Input)
+            self.run_AI()
+
+
+    def run_AI(self):
+        while True:
+            self.Frame_Control.updateFrame(self.Input)
+            self.getCommandList()
+            self.execCommands()
+            self.flashLidar()
+            self.Field_Interface.fitnessUpdate()
+            if self.Field_Interface.ruleCheck():
+                self.Input.setFitness(self.Field_Interface.fitnessFunc())
+                self.Field_Interface.clearFitness()
+                self.Input.updateIteration()
+                self.Field_Interface.resetCar(self.getCar())
+                self.Input.Network.flushNetwork()
+                self.Handler.incIterations()
+                try:
+                    self.Handler.setText("Prev Fitness: " + str(self.Input.cur_fitness), "Best Fitness "+ str(self.Input.best_fitness))
+                    input = self.Handler.checkInput()
+                    self.processWindowInput(input)
+                except (AttributeError):
+                    pass
+                    #Not a graphical interface
+                # self.Input.Network.printConnections()
+            self.Input.update_sensors(self.Lidar_Pointcloud)
+            self.Input.setCarParams(self.getCarParams("Speed"), self.getCarParams("TurnRate"))
+            self.Frame_Control.waitForFrame()
+
+    def run_User(self):
+        while True:
+            self.Frame_Control.updateFrame(self.Input)
+            if self.Mode == "Run":
+                pause_flag = 0
+                self.Handler.window.setBackground("white")
                 self.getCommandList()
                 self.execCommands()
-                self.flashLidar()
-                self.Field_Interface.fitnessUpdate()
-                if self.Field_Interface.ruleCheck():
-                    self.Input.setFitness(self.Field_Interface.fitnessFunc())
-                    self.Field_Interface.clearFitness()
-                    self.Input.updateIteration()
-                    self.Field_Interface.resetCar(self.getCar())
-                    self.Input.Network.flushNetwork()
-                    #self.Input.Network.printConnections()
-                self.Input.update_sensors(self.Lidar_Pointcloud)
-                self.Input.setCarParams(self.getCarParams("Speed"), self.getCarParams("TurnRate"))
-                self.Frame_Control.waitForFrame()
+
+            elif self.Mode == "MapEdit":
+                self.mapFile = open("Maps.txt", "a+")
+                self.Handler.window.setBackground("yellow")
+                self.getMouse()  # this is a loop that runs until exit command is sent
+                self.InputCmdList = self.mapFileBuffer
+                self.execCommands()
+                self.Mode = "Run"
+            else:
+                # assumed mode is "Pause"
+                if pause_flag == 0:
+                    self.Handler.window.setBackground("orange")
+                    self.flashLidar(1)
+                    if self.Field_Interface.checkCollision():
+                        print("Collison Detected!")
+                self.execCommands()
+                pause_flag = 1
+
+            self.Frame_Control.waitForFrame()
 
     def createMap(self):
-        self.Graphics.window.setBackground("yellow")
+        self.Handler.window.setBackground("yellow")
         self.getMouse()  # this is a loop that runs until exit command is sent
         self.drawMap()
 
 
     def getCommandList(self):
         self.InputCmdList = self.Input.pullInput()
+
+    def processWindowInput(self, str):
+        if str == "Pause":
+            input("Paused: Press any key to continue")
+        elif str == "Save":
+            self.Input.Network.best_network.exportNetwork()
+            self.Handler.save(self.Input)
+        elif str == "Load":
+            self.Handler.load(self.Input)
 
     def execCommands(self):
         for x in self.InputCmdList:
@@ -102,8 +127,8 @@ class Messager:
                 pass
         """that looks for commands to the messager, then passes the rest off to the field handler"""
         self.Field_Interface.modify(self.InputCmdList)
-        self.Graphics.setEvents(self.InputCmdList)
-        self.Graphics.popAllEvents()
+        self.Handler.setEvents(self.InputCmdList)
+        self.Handler.popAllEvents()
 
     def changeMode(self, newMode):
         if self.possModes.__contains__(newMode):
@@ -143,15 +168,15 @@ class Messager:
 
     def flashLidar(self, draw = 0):
         try:
-            self.Lidar_Pointcloud = self.Field_Interface.getPointCloud(self.getCarParams("Pos"))
+            self.Lidar_Pointcloud = self.Field_Interface.getPointCloud(self.getCarParams("Pos"), self.getCarParams("Dir"))
             if draw:
-                self.Graphics.drawPointCloud(self.Lidar_Pointcloud)
+                self.Handler.drawPointCloud(self.Lidar_Pointcloud)
         except (IndexError):
             pass
         return self.Lidar_Pointcloud
 
     def getCar(self, index = 0):
-        return self.Graphics.getUserObjects()[index]
+        return self.Handler.getUserObjects()[index]
 
     def getCarParams(self, param_name = None, index = 0):
         car = self.getCar(index)

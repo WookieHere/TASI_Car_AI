@@ -10,14 +10,20 @@ class AI_Interface(Player_Interface):
         self.car_speed = 0
         self.car_turnRate = 0
         self.cur_fitness = 0
-        self.Network = Neural_Network.Neural_Network("Linear")
+        self.best_fitness = -999999
+        self.Network = Neural_Network.Neural_Network("Linear", 10, 5)
+        self.bestNetwork = None
         self.InitNodeGroups()
         self.funcDict = {
             0: "self.changeSpeed(1)",
             1: "self.changeDir(1)",
             2: "self.changeSpeed(-1)",
-            3: "self.changeDir(-1)"
+            3: "self.changeDir(-1)",
+            4: "pass"
         }
+
+    def pullNetwork(self):
+        return self.Network.best_network
 
     def setCarParams(self, speed = 0, car_turnRate = 0):
         self.car_speed = speed
@@ -63,6 +69,9 @@ class AI_Interface(Player_Interface):
 
     def setFitness(self, fitness):
         self.cur_fitness = fitness
+        if self.cur_fitness > self.best_fitness:
+            self.best_fitness = self.cur_fitness
+            self.bestNetwork = self.Network.best_network
         self.Network.setFitness(self.cur_fitness)
 
     def processInput(self):
@@ -81,6 +90,10 @@ class AI_Interface(Player_Interface):
 
     def updateIteration(self):
         self.Network.pulse(1, "Batch")
+        if self.Network.checkProgress() == "Reset":
+            self.Network = self.Network.best_network
+            self.Network.best_network = self.Network.saveNetwork()
+            self.Network.learn_count = 0
 
     def createCar(self, point):
         new_str = "self.addUserObject(Car(Point(" + str(point.x) + "," + str(point.y) + ")))"

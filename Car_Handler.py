@@ -7,7 +7,7 @@ class Car(UserObject):
         super().__init__()
         self.name = "Car"
         self.car = Rectangle(Point(pt.x - 20, pt.y - 20), Point(pt.x + 20, pt.y + 20))
-        self.car.setFill('yellow')
+        self.car.setFill('yellow') #only used with graphics
         self.carTopSpeed = 5
         self.carMaxTurnRate = .1 #this is in radians
         self.carMaxTurnTime = 5 # takes 5 frames to make wheel axis turn 45 degrees
@@ -44,6 +44,9 @@ class Car(UserObject):
             self.car.move(x, y)
             self.pos.x += x
             self.pos.y += y
+            self.carDirRad += self.turnRate * self.carSpeed
+            self.carDir[0] = cos(self.carDirRad * math.pi)
+            self.carDir[1] = sin(self.carDirRad * math.pi)
             """checks to see if x and y are ints"""
         except (TypeError):
             print("Error: Invalid Operands in move (", x,",", y, ")")
@@ -51,10 +54,6 @@ class Car(UserObject):
     def act(self):
         super().act()
         self.move(self.carDir[0] * self.carSpeed, self.carDir[1] * self.carSpeed)
-        self.carDirRad += self.turnRate
-        self.carDir[0] = cos(self.carDirRad)
-        self.carDir[1] = sin(self.carDirRad)
-
 
     def draw(self, window):
         self.car.draw(window)

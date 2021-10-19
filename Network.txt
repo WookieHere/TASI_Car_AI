@@ -1,0 +1,126 @@
+Input_Points
+0:
+   0:   1:   2:1:
+   0:   1:   2:2:
+   0:   1:   2:3:
+   0:   1:   2:4:
+   0:   1:   2:5:
+   0:   1:   2:6:
+   0:   1:   2:7:
+   0:   1:   2:Point_Hidden_1
+0:
+   0:output = 0 * x + 0
+1:
+   0:output = 0 * x + 0
+2:
+   0:output = 0 * x + 0
+3:
+   0:output = 0 * x + 0
+4:
+   0:output = 0 * x + 0
+5:
+   0:output = 0 * x + 0
+6:
+   0:output = 0 * x + 0
+7:
+   0:output = 0 * x + 0
+8:
+   0:output = 0 * x + 0
+9:
+   0:output = 0 * x + 0
+10:
+   0:output = 0 * x + 0
+11:
+   0:output = 0 * x + 0
+12:
+   0:output = 0 * x + 0
+13:
+   0:output = 0 * x + 0
+14:
+   0:output = 0 * x + 0
+15:
+   0:output = 0 * x + 0
+16:
+   0:output = 0 * x + 0
+17:
+   0:output = 0 * x + 0
+18:
+   0:output = 0 * x + 0
+19:
+   0:output = 0 * x + 0
+20:
+   0:output = 0 * x + 0
+21:
+   0:output = 0 * x + 0
+22:
+   0:output = 0 * x + 0
+23:
+   0:output = 0 * x + 0
+Point_Hidden_2
+0:
+   0:output = 0 * x + 0
+   1:output = 0 * x + 0
+   2:output = 0 * x + 0
+   3:output = 0 * x + 0
+   4:output = 0 * x + 0
+1:
+   0:output = 0 * x + 0
+   1:output = 0 * x + 0
+   2:output = 0 * x + 0
+   3:output = 0 * x + 0
+   4:output = 0 * x + 0
+2:
+   0:output = 0 * x + 0
+   1:output = 0 * x + 0
+   2:output = 0 * x + 0
+   3:output = 0 * x + 0
+   4:output = 0 * x + 0
+3:
+   0:output = 0 * x + 0
+   1:output = 0 * x + 0
+   2:output = 0 * x + 0
+   3:output = 0 * x + 0
+   4:output = 0 * x + 0
+4:
+   0:output = 0 * x + 0
+   1:output = 0 * x + 0
+   2:output = 0 * x + 0
+   3:output = 0 * x + 0
+   4:output = 0 * x + 0
+5:
+   0:output = 0 * x + 0
+   1:output = 0 * x + 0
+   2:output = 0 * x + 0
+   3:output = 0 * x + 0
+   4:output = 0 * x + 0
+6:
+   0:output = 0 * x + 0
+   1:output = 0 * x + 0
+   2:output = 0 * x + 0
+   3:output = 0 * x + 0
+   4:output = 0 * x + 0
+7:
+   0:output = 0 * x + 0
+   1:output = 0 * x + 0
+   2:output = 0 * x + 0
+   3:output = 0 * x + 0
+   4:output = 0 * x + 0
+Input_Car_Parameters
+0:
+   0:output = 0 * x + 0
+   1:output = 0 * x + 0
+   2:output = 0 * x + 0
+   3:output = 0 * x + 0
+   4:output = 0 * x + 0
+1:
+   0:output = 0 * x + 0
+   1:output = 0 * x + 0
+   2:output = 0 * x + 0
+   3:output = 0 * x + 0
+   4:output = 0 * x + 0
+Output
+0:
+1:
+2:
+3:
+4:

@@ -1,98 +1,52 @@
-from Car_Handler import *
+
+from Handlers import *
 
 
 
-
-class GHandler:
+class GHandler(Handler):
     def __init__(self, xsize = 1000, ysize = 1000):
+        super().__init__()
         self.window = GraphWin('Car_AI', xsize, ysize)
-        self.Objects = []
-        self.UserObjects = []
-        self.event_queue = []
+        self.fit_text = Text(Point(100, 20), "Prev Fitness: ")
+        self.fit_text.setSize(12)
+        self.fit_text.draw(self.window)
+        self.best_fit_text = Text(Point(100, 40), "Prev Fitness: ")
+        self.best_fit_text.setSize(12)
+        self.best_fit_text.draw(self.window)
+        self.func_dict = {
+            "p" : "Pause",
+            "s" : "Save",
+            "l" : "Load"
+        }
+        try:
+            super().load(self.save_file)
+            print("Network leaded from save file")
+        except:
+            pass
         """that array will be filled later with things to draw etc."""
+
+    def setText(self, string, string2):
+        self.fit_text.setText(string)
+        self.best_fit_text.setText(string2)
 
     def addObject(self, object):
         """object is a string of the init call"""
-        try:
-            pre_string = "self.Objects.append(" + object + ")"
-            exec(pre_string)
-        except (TypeError):
-            self.Objects.append(object)
-
+        super().addObject(object)
         self.Objects[len(self.Objects) - 1].draw(self.window)   #this draws the newly placed object
 
     def addUserObject(self, object):
         """object is a string of the init call"""
-        try:
-            pre_string = "self.UserObjects.append(" + object + ")"
-            exec(pre_string)
-        except (TypeError):
-            self.UserObjects.append(object)
+        super().addUserObject(object)
         self.UserObjects[len(self.UserObjects) - 1].draw(self.window)  # this draws the newly placed object
-
-    def addToEvents(self, event):
-        if event == "end":
-            self.event_queue.append(event)
-        else:
-            for x in self.UserObjects:
-                x.addToActionQueue(event)
-
-    def setEvents(self, message):
-        """the message is an array of strings as commands to particular objects"""
-        self.event_queue = message
-        pass
-
-    def popEvent(self):
-        """this will process an event and then do the appropriate command"""
-        try:
-            if self.event_queue[0] == "end":
-                for x in self.Objects:
-                    x.act()
-                for x in self.UserObjects:
-                    x.act()
-                self.event_queue.pop()
-                return -1
-                """this does not execute an 'end frame' command"""
-            else:
-                exec(self.event_queue[0])
-                self.event_queue.pop()
-                return 0
-        except (IndexError):
-            print("Warning: Event Queue is empty")
-            self.event_queue.append("end")
-            for x in self.Objects:
-                x.act()
-            for x in self.UserObjects:
-                x.act()
-            self.event_queue.pop()
-            return -1
-
-    def getObjects(self):
-        return self.Objects
-
-    def getUserObjects(self):
-        return self.UserObjects
-
-    def popAllEvents(self):
-        while len(self.event_queue) > 0:
-            try:
-                if self.event_queue[0] == "end":
-                    for x in self.Objects:
-                        x.act()
-                    for x in self.UserObjects:
-                        x.act()
-                    self.event_queue.pop(0)
-                    """this does not execute an 'end frame' command"""
-                else:
-                    for x in self.UserObjects:
-                        x.sendCmd(self.event_queue[0])
-                    exec(self.event_queue[0])
-                    self.event_queue.pop(0)
-            except (IndexError, AttributeError):
-                self.event_queue.pop(0)
 
     def drawPointCloud(self, pointcloud):
         for pt in pointcloud.points:
             temp = Circle(Point(pt.x, pt.y), 5)
             temp.setFill('blue')
             temp.draw(self.window)
+
+    def checkInput(self):
+        try:
+            return self.func_dict[self.window.checkKey()]
+        except:
+            return None
