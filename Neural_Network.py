@@ -1,23 +1,47 @@
+import copy
 from random import Random, randrange, randint
 from math import sin, cos
 
 class Neural_Network:
     """Every point has a radian and distance"""
     """Those lead into a hidden layer, which output to the possible commands"""
-    def __init__(self, default_function = "Linear"):
+    def __init__(self, default_function = "Linear", learn_rate = 10, default_batchlength = 10):
         self.default_function = default_function
         self.groups = []
         self.temp_group = []
+        self.learn_rate = learn_rate
+        self.batch_len = default_batchlength
+        self.learn_count = 0
         self.fitness = 0
+        self.best_fitness = -9999999
+        self.batch_best_fitness = -9999999
+        self.best_network = None
         self.learning = 0
+
+    def checkProgress(self):
+        if self.learn_count > self.batch_len:
+            if self.batch_best_fitness < self.best_fitness:
+                return "Reset"
+            else:
+                self.batch_best_fitness = -9999999
+                self.learn_count = 0
+        else:
+            self.learn_count += 1
 
     def setFitness(self, fitness):
         self.fitness = fitness
-        for group in self.groups:
-            node_group = self.getGroup(group)
-            for node in node_group:
-                node.fitness = self.fitness
+        if self.fitness > self.batch_best_fitness:
+            self.batch_best_fitness = self.fitness
+        if self.fitness > self.best_fitness:
+            self.best_fitness = fitness
+            self.best_network = self.saveNetwork()
+            for group in self.groups:
+                node_group = self.getGroup(group)
+                for node in node_group:
+                    node.fitness = self.fitness
 
+    def saveNetwork(self):
+        return copy.deepcopy(self)
 
     def updateConfig(self):
         for group in self.groups:
@@ -37,7 +61,7 @@ class Neural_Network:
 
     def addNode(self, group_name):
         if group_name in self.groups:
-            new_node = Network_Node()
+            new_node = Network_Node(self.learn_rate, self.batch_len)
             exec_string = "self.group_"+group_name+".append(new_node)"
             exec(exec_string)
             return new_node
@@ -204,7 +228,7 @@ class Neural_Network:
 
 
 class Network_Node:
-    def __init__(self, learning_rate = 1):
+    def __init__(self, learning_rate = 1, batch_size = 10):
         self.input = 0
         self.learning_rate = learning_rate
         self.connections = []
@@ -243,14 +267,13 @@ class FunctionHelper:
         self.rand_handler = Random()
         self.leaning_rate = learning_rate
         self.equation = None
-        self.best_constants = []
-        self.best_fitness = 0
-        self.iterations_since_updated = []
+        #self.best_constants = []
+        #self.best_fitness = -999999
+        self.iterations_since_updated = 0
         self.constants = []
-        self.fitnesses = []
+        #self.fitnesses = []
         self.selection_bool = []
         self.function = None
-
         self.input = 0
         self.output = 0
 
@@ -330,9 +353,9 @@ class FunctionHelper:
 
     def addConstant(self, value = 0):
         self.constants.append(value)
-        self.fitnesses.append(-999999)
-        self.iterations_since_updated.append(0)
-        self.best_constants.append(0)
+        #self.fitnesses.append(-999999)
+        #self.iterations_since_updated.append(0)
+        #self.best_constants.append(0)
         self.selection_bool.append(0)
 
 
@@ -344,7 +367,7 @@ class FunctionHelper:
         except (TypeError):
             print("ERROR: Attempted to Evaluate Abstract Function")
 
-    def learn(self, fitness, batch_length = 5, mutation_rate = .10, anneal_rate = .01, rand_resolution = 100):
+    def learn(self, fitness, batch_length = 10, mutation_rate = .10, anneal_rate = .01, rand_resolution = 100):
         const_len = len(self.constants)
         #This saves the best constants so far
         for k in range(0, len(self.fitnesses)):
@@ -368,25 +391,34 @@ class FunctionHelper:
             if rand_sel < const_len * rand_resolution * anneal_rate:
                 self.anneal(var_index)
 
-    def batchLearn(self, fitness, batch_length = 10, mutation_rate = .50, anneal_rate = .00, rand_resolution = 100):
+    def batchLearn(self, batch_length = 10, mutation_rate = .50, anneal_rate = .00, rand_resolution = 100):
         const_len = len(self.constants)
         # This saves the best constants so far
+        """
         if fitness > self.best_fitness:
             self.best_fitness = fitness
 
+
         for k in range(0, len(self.fitnesses)):
-            if fitness > self.fitnesses[k] and self.selection_bool[k] != 0:
+            if fitness > self.fitnesses[k]: #and self.selection_bool[k] != 0:
                 self.fitnesses[k] = fitness
-                self.setBestConstants(self.constants[k], k)
-                self.iterations_since_updated[k] = 0
+                self.setBestConstants(self.constants)
+
 
         for k in range(0, len(self.iterations_since_updated)):
             if self.iterations_since_updated[k] > batch_length:
-                self.setConstant(k, self.best_constants[k])
+                self.setConstant(self.best_constants[k], k)
                 self.iterations_since_updated[k] = 0
                 self.selectConstants()
             else:
                 self.iterations_since_updated[k] += 1
+        """
+
+        if self.iterations_since_updated > batch_length:
+            self.iterations_since_updated = 0
+            self.selectConstants()
+        else:
+            self.iterations_since_updated += 1
 
         for var_index in range(0, len(self.constants)):
             rand_sel = self.rand_handler.randint(0, const_len * rand_resolution)
@@ -400,22 +432,24 @@ class FunctionHelper:
 
     def mutate(self, var_index):
         """This is an abstract mutate for testing"""
-        self.constants[var_index] += self.leaning_rate * pow(-1, self.rand_handler.randint(0, 1))
+        self.constants[var_index] += self.rand_handler.randint(-self.leaning_rate, self.leaning_rate)
 
     def anneal(self, var_index):
         self.constants[var_index] = self.rand_handler.randint(-100, 100)
 
-    def setConstant(self, index, value):
+    def setConstant(self, value, index):
         self.constants[index] = value
 
+    def selectConstants(self, chance=5):
+        for k in range(0, len(self.constants)):
+            self.selection_bool[k] = 0
+            if self.rand_handler.randint(0, 100) < chance:
+                self.selection_bool[k] = 1
+
+"""
     def setBestConstants(self, values, index = None):
         if index != None:
             self.best_constants[index] = values
         else:
             self.best_constants = values
-
-    def selectConstants(self, chance = 2):
-        for k in range(0, len(self.constants)):
-            self.selection_bool[k] = 0
-            if self.rand_handler.randint(0, 100) < chance:
-                self.selection_bool[k] = 1
+"""

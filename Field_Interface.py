@@ -29,11 +29,17 @@ class Field_Interface:
     def ruleCheck(self):
         self.iteration_counter += 1
         self.Stall_Checker.setCarPos(self.Lidar.pos)
+        reason = self.Stall_Checker.checkStall(self.current_fitness)
         if self.checkCollision():
             self.current_fitness -= 10000
+            self.iteration_counter = 0
             return True
-        elif self.Stall_Checker.checkStall(self.current_fitness):
-            self.current_fitness -= 1000 * self.Stall_Checker.iteration_count
+        elif reason == "Pos_Stall":
+            self.current_fitness -= 10000 * self.iteration_counter
+            self.iteration_counter = 0
+            return True
+        elif reason == "Fit_Stall":
+            self.current_fitness -= 11000
             return True
         else:
             return False
@@ -44,9 +50,9 @@ class Field_Interface:
         cmdList.append("end")
         return 1
 
-    def getPointCloud(self, pos, resolution = 8):
+    def getPointCloud(self, pos, start_angle = 0,  resolution = 8):
         self.Lidar.setPos(Pt(pos.x, pos.y))
-        self.pointcloud = self.Lidar.scan(self.walls, resolution)
+        self.pointcloud = self.Lidar.scan(self.walls, resolution, start_angle)
         return self.pointcloud
 
     def addWall(self, cmd):
@@ -185,10 +191,10 @@ class Stall_Tracker:
         self.iteration_count = 0
         self.fit_count = 0
         self.min_stall_length = 50
-        self.min_fit_length = 500
+        self.min_fit_length = 100
         self.saved_pos = pt
         self.saved_fit = 0
-        self.leniency = 5
+        self.leniency = 20
 
     def setCarPos(self, pt):
         self.car_pos = pt
@@ -199,13 +205,15 @@ class Stall_Tracker:
     def checkStall(self, fitness):
         if self.iteration_count > self.min_stall_length:
             self.iteration_count = 0
+            """
             if self.getStallDist() < self.leniency:
                 self.setSavedPos(self.car_pos)
-                return True
-            elif self.fit_count > self.min_fit_length:
+                return "Pos_Stall"
+            """
+            if self.fit_count > self.min_fit_length:
                 if self.saved_fit == fitness:
                     self.setSavedPos(self.car_pos)
-                    return True
+                    return "Fit_Stall"
                 else:
                     self.fit_count = 0
             else:
@@ -216,6 +224,7 @@ class Stall_Tracker:
         else:
             self.iteration_count += 1
             self.fit_count += 1
+
 
     def getStallDist(self):
         dist = sqrt(pow(self.car_pos.x - self.saved_pos.x, 2) + pow(self.car_pos.y - self.saved_pos.y, 2))

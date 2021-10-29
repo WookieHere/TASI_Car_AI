@@ -1,4 +1,4 @@
-
+import math
 from math import sin, cos, sqrt, pow, pi
 
 class Pt:
@@ -8,6 +8,11 @@ class Pt:
         self.radian = rads
         self.dist = 0 #this will be arbitrary in some cases
         """this just initializes the point"""
+
+    def makePointAngle(self, angle, length):
+        new_x = (cos(angle) * length) + self.x
+        new_y= (sin(angle) * length) + self.y
+        return Pt(new_x, new_y, angle)
 
 class PointClound:
     def __init__(self, points = [], resolution = 60):
@@ -183,19 +188,17 @@ class Lidar:
         """This function generates a pointcloud around a user object"""
         self.pointcloud.setResolution(resolution)
         self.pointcloud.points = []
-        angle = starting_angle
-        lidar_line = MathLine(self.pos, Pt(self.pos.x + self.range, self.pos.y))
-
+        angle = starting_angle * 360/math.pi
+        lidar_line = MathLine(self.pos, self.pos.makePointAngle(starting_angle, self.range))
         for x in range(0, resolution):
             lidar_line.rotate(angle)
             for wall in track:
                 test_pt = self.getIntersect(lidar_line, wall)
-
                 if test_pt != None:
-                    test_pt.radian = angle/180
+                    test_pt.radian = angle * math.pi/360
                     test_pt.dist = self.getDistPoint(test_pt)
                     self.pointcloud.append(test_pt)
             angle = angle + (360/resolution)
         return self.pointcloud
-    """There is a problem somewhere with the rotating process!!!"""
+
 
