@@ -8,7 +8,10 @@ class Handler:
         self.UserObjects = []
         self.event_queue = []
         self.iteration_count = 0
-        self.save_file = open("car_network.obj", "rb")
+        try:
+            self.save_file = open("car_network.obj", "rb")
+        except:
+            pass
 
 
     def getObjects(self):
@@ -90,7 +93,7 @@ class Handler:
             self.save_file = open("car_network.obj", "wb")
             network = obj.pullNetwork()
             _pickle.dump(network, self.save_file, _pickle.HIGHEST_PROTOCOL)
-        except (AttributeError):
+        except:
             print("Error: Unable to save network")
             pass
 
@@ -100,7 +103,7 @@ class Handler:
             self.save_file = open("car_network.obj", "rb")
             network = _pickle.load(self.save_file)
             obj.setNetwork(network)
-        except (AttributeError):
+        except:
             pass
 
 class PhysicalHandler(Handler):

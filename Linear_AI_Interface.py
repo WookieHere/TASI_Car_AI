@@ -44,28 +44,26 @@ class AI_Interface(Player_Interface):
 
     def InitNodes(self):
         """Initialize all nodes in the network (does nto handle input)"""
-        for point in range(0, self.input_cloud.resolution):
-            pt = self.Network.addNode("Input_Points")
-            pt_x_dir = self.Network.addNode("Point_Hidden_1")
-            pt_y_dir = self.Network.addNode("Point_Hidden_1")
-            pt_dist = self.Network.addNode("Point_Hidden_1")
-            pt_H = self.Network.addNode("Point_Hidden_2")
-            self.Network.connectNodes(pt, pt_x_dir, "Custom", "self.output = cos(input.radian)")
-            self.Network.connectNodes(pt, pt_y_dir, "Custom", "self.output = sin(input.radian)")
-            self.Network.connectNodes(pt, pt_dist, "Custom", "self.output = input.dist")
-            self.Network.connectNodes(pt_x_dir, pt_H)
-            self.Network.connectNodes(pt_y_dir, pt_H)
-            self.Network.connectNodes(pt_dist, pt_H)
-
         car_turnRate = self.Network.addNode("Input_Car_Parameters")
         car_speed = self.Network.addNode("Input_Car_Parameters")
+        for point in range(0, self.input_cloud.resolution):
+            pt = self.Network.addNode("Input_Points")
+            pt_dist = self.Network.addNode("Point_Hidden_1")
+            pt_H = self.Network.addNode("Point_Hidden_2")
+            self.Network.connectNodes(pt, pt_dist, "Custom", "self.output = input.dist")
+            self.Network.connectNodes(pt_dist, pt_H)
+            self.Network.connectNodes(car_speed, pt_H, "Custom", "self.output = input")
+            self.Network.connectNodes(car_turnRate, pt_H, "Custom", "self.output = input")
+
 
         for output in self.funcDict:
             out = self.Network.addNode("Output")
             for node in self.Network.getGroup("Point_Hidden_2"):
                 self.Network.connectNodes(node, out)
+            """
             for node in self.Network.getGroup("Input_Car_Parameters"):
                 self.Network.connectNodes(node, out)
+            """
 
     def setFitness(self, fitness):
         self.cur_fitness = fitness

@@ -24,7 +24,7 @@ class Player_Interface:
         return new_str
 
     def checkInput(self):
-        keypressed = self.Msgr.Graphics.window.checkKey()
+        keypressed = self.Msgr.Handler.window.checkKey()
         if keypressed != "":
             print(keypressed)
             try:
@@ -36,8 +36,8 @@ class Player_Interface:
             return len(self.funcDict) - 1  # should return "end"
 
     def checkMouseInput(self):
-        key = self.Msgr.Graphics.window.checkKey()
-        mousePoint = self.Msgr.Graphics.window.checkMouse()
+        key = self.Msgr.Handler.window.checkKey()
+        mousePoint = self.Msgr.Handler.window.checkMouse()
 
         if key == "e":
             return "exit"

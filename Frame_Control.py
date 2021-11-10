@@ -52,7 +52,7 @@ class TimerInterrupt:
         mouseInput = "None"
         progressFlag = 0
         newCommand = ""
-        Input.Msgr.Graphics.window.checkMouse() #clear one mouse input
+        Input.Msgr.Handler.window.checkMouse() #clear one mouse input
         cmdStartDict = {
             "makeWall" : "self.addObject(Wall(Point(",
             "makeTrackLine" : "self.addObject(TrackLine(Point(",

@@ -4,6 +4,9 @@ import Field_Interface
 import Graphics_Handler
 import Lines_and_Dist
 import copy
+import Exporter
+
+test = Exporter.Exporter(None)
 
 class Messager:
     def __init__(self, UserClass, HandlerClass, frameRate = .0125):
@@ -41,6 +44,8 @@ class Messager:
             self.Field_Interface.Reward_Track.setCheckPoints()
             self.Field_Interface.Reward_Track.drawCheckpoints(self.Handler)
             #self.Input.Network.manualControl()
+            test.Network = self.Input.Network
+            test.queueFunctions()
             self.run_AI()
 
 
@@ -58,6 +63,7 @@ class Messager:
                 self.Field_Interface.resetCar(self.getCar())
                 self.Input.Network.flushNetwork()
                 self.Handler.incIterations()
+
                 try:
                     self.Handler.setText("Prev Fitness: " + str(self.Input.cur_fitness), "Best Fitness "+ str(self.Input.best_fitness))
                     input = self.Handler.checkInput()
