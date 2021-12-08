@@ -34,7 +34,7 @@ class AI_Interface(Player_Interface):
         self.InitNodes()
         self.Network.learning = 1
         self.Network.updateConfig()
-        self.Network.manualControl()
+        #self.Network.manualControl()
 
     def InitNodeGroups(self):
         self.Network.addGroup("Input_Points")
@@ -54,8 +54,8 @@ class AI_Interface(Player_Interface):
             pt_H = self.Network.addNode("Point_Hidden_2")
             self.Network.connectNodes(pt, pt_dist, "Custom", "self.output = input.dist")
             self.Network.connectNodes(pt_dist, pt_H)
-            self.Network.connectNodes(car_speed, pt_H, "Custom", "self.output = input")
-            self.Network.connectNodes(car_turnRate, pt_H, "Custom", "self.output = input")
+            #self.Network.connectNodes(car_speed, pt_H, "Custom", "self.output = input")
+            #self.Network.connectNodes(car_turnRate, pt_H, "Custom", "self.output = input")
 
         for node in self.Network.getGroup("Input_Car_Parameters"):
             new_node = self.Network.addNode("Car_Param_Hidden_2")

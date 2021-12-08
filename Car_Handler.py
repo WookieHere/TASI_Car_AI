@@ -23,6 +23,7 @@ class Car(UserObject):
             pass
         else:
             self.carSpeed += 1 * always_active_bool
+        #recently changed to negative
 
     def resetMovement(self):
         self.carSpeed = 0
@@ -45,8 +46,12 @@ class Car(UserObject):
             self.pos.x += x
             self.pos.y += y
             self.carDirRad += self.turnRate * self.carSpeed
-            self.carDir[0] = cos(self.carDirRad * math.pi)
-            self.carDir[1] = sin(self.carDirRad * math.pi)
+            if self.carDirRad < 0:
+                self.carDirRad += 2 * math.pi
+            self.carDirRad = self.carDirRad % (2 * math.pi)
+            self.carDir[0] = cos(self.carDirRad)
+            self.carDir[1] = sin(self.carDirRad)
+
             """checks to see if x and y are ints"""
         except (TypeError):
             print("Error: Invalid Operands in move (", x,",", y, ")")
@@ -54,6 +59,14 @@ class Car(UserObject):
     def act(self):
         super().act()
         self.move(self.carDir[0] * self.carSpeed, self.carDir[1] * self.carSpeed)
+        if self.turnRate != 0:
+            self.turnRate = 0
+            """
+        if self.carDirRad > math.pi:
+            self.carDirRad -= math.pi
+        elif self.carDirRad < -math.pi:
+            self.carDirRad += math.pi
+            """
 
     def draw(self, window):
         self.car.draw(window)

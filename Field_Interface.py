@@ -8,7 +8,7 @@ class Field_Interface:
         self.checkpoint = Pt(0, 0)
         self.walls = []
         self.Reward_Track = Reward_Track()
-        self.Lidar = Lidar()
+        self.Lidar = Lidar(Pt(0,0), 2000)
         self.Stall_Checker = Stall_Tracker(self.Lidar.pos)
         self.iteration_counter = 0
         self.current_fitness = 0

@@ -50,7 +50,7 @@ class Messager:
 
 
     def run_AI(self):
-        self.Input.Network.manualControl()
+        #self.Input.Network.manualControl()
         while True:
             self.Frame_Control.updateFrame(self.Input)
             self.getCommandList()
@@ -122,6 +122,8 @@ class Messager:
             self.Handler.save(self.Input)
         elif str == "Load":
             self.Handler.load(self.Input)
+        elif str == "Man":
+            self.Input.Network.manualControl()
 
     def execCommands(self):
         for x in self.InputCmdList:

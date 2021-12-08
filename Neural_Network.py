@@ -206,10 +206,24 @@ class Neural_Network:
                 node_group = self.getGroup(group)
                 if node_group != []:
                     temp = self.getMaxIndex(node_group);
+                    self.flushNetwork()
                     return temp
                 else:
                     print("ERROR: No Outputs in Neural Network")
                     return 0
+
+    def flushNetwork(self):
+        for group in self.groups:
+            for node in self.getGroup(group):
+                #node.input = 0
+                try:
+                    node.input -= node.input
+                    node.output = 0
+                except:
+                    pass
+                for func in node.functions:
+                    #func.flush()
+                    pass
 
     def getMaxIndex(self, node_group):
         max = -1000000
@@ -220,11 +234,12 @@ class Neural_Network:
                 max_index = node_group.index(node)
         return max_index
 
-    def flushNetwork(self):
+    """def flushNetwork(self):
         for group in self.groups:
             node_list = self.getGroup(group)
             for node in node_list:
                 node.input = 0
+    """
 
 
 
@@ -239,7 +254,7 @@ class Network_Node:
 
     def update_input(self, new_val):
         try:
-            self.input = new_val #this was formerly +=
+            self.input += new_val #this was formerly =
         except (TypeError):
             self.input = new_val
 

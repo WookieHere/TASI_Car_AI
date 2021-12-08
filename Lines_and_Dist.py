@@ -139,10 +139,13 @@ class Lidar:
 
 
     def getDistPoint(self, pt):
-        x = self.pos.x
-        y = self.pos.y
-        dist = sqrt(pow(x - pt.x, 2) + pow(y - pt.y, 2))
-        return dist
+        if pt.x == None or pt.y == None:
+            return 99999
+        else:
+            x = self.pos.x
+            y = self.pos.y
+            dist = sqrt(pow(x - pt.x, 2) + pow(y - pt.y, 2))
+            return dist
 
     def getIntersect(self, lidar_line, other_line):
         """a and b are lines"""
@@ -157,7 +160,7 @@ class Lidar:
             x = (other_line.y_intercept - lidar_line.y_intercept) / (lidar_line.slope - other_line.slope)
             y = (lidar_line.slope * x) + lidar_line.y_intercept
             new_pt = Pt(x, y)
-            if self.checkPointLine(other_line, new_pt):
+            if self.checkPointLine(lidar_line, new_pt) and self.checkPointLine(other_line, new_pt):
                 return new_pt
             else:
                 #no intersection
@@ -175,7 +178,7 @@ class Lidar:
         domain = line.getDomain()
         range = line.getRange()
         if domain[0] < pt.x and domain[1] > pt.x:
-            if range[0] < pt.y or range[1] > pt.y:
+            if range[0] < pt.y or range[1] >= pt.y:
                 return 1
             else:
                 return 0
@@ -188,17 +191,40 @@ class Lidar:
         """This function generates a pointcloud around a user object"""
         self.pointcloud.setResolution(resolution)
         self.pointcloud.points = []
-        angle = starting_angle * 360/math.pi
+        angle = round(starting_angle * 180)
+        if angle < 0:
+            angle = (angle % -360) + 360
+        else:
+            angle = angle % 360
+        angle_delta = (360/resolution)
         lidar_line = MathLine(self.pos, self.pos.makePointAngle(starting_angle, self.range))
+        test_pt_array = []
+        pt_flag = 0
         for x in range(0, resolution):
-            lidar_line.rotate(angle)
+            test_pt_array = []
             for wall in track:
                 test_pt = self.getIntersect(lidar_line, wall)
                 if test_pt != None:
                     test_pt.radian = angle * math.pi/360
                     test_pt.dist = self.getDistPoint(test_pt)
-                    self.pointcloud.append(test_pt)
-            angle = angle + (360/resolution)
+                    test_pt_array.append(test_pt)
+                    pt_flag = 1
+
+            if pt_flag == 0:
+                placeholder_pt = Pt(0, 0, 99999)
+                # that is a point to use instead of "None"
+                self.pointcloud.append(placeholder_pt)
+            else:
+                pt_flag = 0
+                min = 99999
+                min_index = 0
+                for pt in test_pt_array:
+                    if pt.dist < min:
+                        min = pt.dist
+                        min_index = test_pt_array.index(pt)
+                self.pointcloud.append(test_pt_array[min_index])
+            angle += angle_delta
+            lidar_line.rotate(angle)
         return self.pointcloud
 
 

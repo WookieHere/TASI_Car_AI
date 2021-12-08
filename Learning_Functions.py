@@ -171,6 +171,14 @@ class FunctionHelper:
             if self.rand_handler.randint(0, 100) < chance:
                 self.selection_bool[k] = 1
 
+    def flush(self):
+        try:
+            if self.input != 0:
+                self.input = 0
+                self.output = 0
+        except(TypeError):
+            pass
+
 """
     def setBestConstants(self, values, index = None):
         if index != None:

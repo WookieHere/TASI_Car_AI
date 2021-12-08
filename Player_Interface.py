@@ -26,7 +26,7 @@ class Player_Interface:
     def checkInput(self):
         keypressed = self.Msgr.Handler.window.checkKey()
         if keypressed != "":
-            print(keypressed)
+            #print(keypressed)
             try:
                 return self.valid_keys.index(keypressed)
             except (ValueError):

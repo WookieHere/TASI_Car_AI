@@ -16,7 +16,8 @@ class GHandler(Handler):
         self.func_dict = {
             "p" : "Pause",
             "s" : "Save",
-            "l" : "Load"
+            "l" : "Load",
+            "m" : "Man"
         }
         try:
             super().load(self.save_file)
