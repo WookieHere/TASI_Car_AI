@@ -34,12 +34,14 @@ class AI_Interface(Player_Interface):
         self.InitNodes()
         self.Network.learning = 1
         self.Network.updateConfig()
+        self.Network.manualControl()
 
     def InitNodeGroups(self):
         self.Network.addGroup("Input_Points")
         self.Network.addGroup("Point_Hidden_1")
         self.Network.addGroup("Point_Hidden_2")
         self.Network.addGroup("Input_Car_Parameters")
+        self.Network.addGroup("Car_Param_Hidden_2")
         self.Network.addGroup("Output")
 
     def InitNodes(self):
@@ -55,10 +57,16 @@ class AI_Interface(Player_Interface):
             self.Network.connectNodes(car_speed, pt_H, "Custom", "self.output = input")
             self.Network.connectNodes(car_turnRate, pt_H, "Custom", "self.output = input")
 
+        for node in self.Network.getGroup("Input_Car_Parameters"):
+            new_node = self.Network.addNode("Car_Param_Hidden_2")
+            self.Network.connectNodes(node, new_node, "Custom", "self.output = input")
+
 
         for output in self.funcDict:
             out = self.Network.addNode("Output")
             for node in self.Network.getGroup("Point_Hidden_2"):
+                self.Network.connectNodes(node, out)
+            for node in self.Network.getGroup("Car_Param_Hidden_2"):
                 self.Network.connectNodes(node, out)
             """
             for node in self.Network.getGroup("Input_Car_Parameters"):
@@ -100,5 +108,3 @@ class AI_Interface(Player_Interface):
 
     def update_sensors(self, new_cloud):
         self.input_cloud = new_cloud
-
-

@@ -162,7 +162,7 @@ class FunctionHelper:
     def anneal(self, var_index):
         self.constants[var_index] = self.rand_handler.randint(-100, 100)
 
-    def setConstant(self, value, index):
+    def setConstant(self, index, value):
         self.constants[index] = value
 
     def selectConstants(self, chance = 5):

@@ -50,6 +50,7 @@ class Messager:
 
 
     def run_AI(self):
+        self.Input.Network.manualControl()
         while True:
             self.Frame_Control.updateFrame(self.Input)
             self.getCommandList()
